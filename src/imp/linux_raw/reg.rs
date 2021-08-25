@@ -13,10 +13,10 @@
 
 #![allow(unsafe_code)]
 
+use crate::c_types::{c_int, c_uint};
 use crate::io::RawFd;
-use std::ffi::c_void;
-use std::marker::PhantomData;
-use std::os::raw::{c_int, c_uint};
+use core::ffi::c_void;
+use core::marker::PhantomData;
 
 pub(super) trait ToAsm: private::Sealed {
     /// Convert `self` to a `usize` ready to be passed to a syscall
@@ -183,7 +183,7 @@ impl<Num: RetNumber> RetReg<Num> {
     }
 
     #[inline]
-    pub(super) fn is_in_range(&self, range: std::ops::Range<isize>) -> bool {
+    pub(super) fn is_in_range(&self, range: core::ops::Range<isize>) -> bool {
         range.contains(&(self.bits as isize))
     }
 }

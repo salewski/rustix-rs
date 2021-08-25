@@ -61,13 +61,19 @@
 use crate::imp::libc::conv::{ret, ret_owned_fd, ret_u32};
 use crate::io;
 use crate::io::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd, RawFd};
+use alloc::vec::Vec;
 use bitflags::bitflags;
+use core::convert::TryInto;
+use core::convert::TryInto;
+use core::fmt;
+use core::fmt;
+use core::marker::PhantomData;
+use core::marker::PhantomData;
+use core::ops::Deref;
+use core::ops::Deref;
+use core::ptr::{null, null_mut};
+use core::ptr::{null, null_mut};
 use io_lifetimes::{AsFd, BorrowedFd, FromFd, IntoFd};
-use std::convert::TryInto;
-use std::fmt;
-use std::marker::PhantomData;
-use std::ops::Deref;
-use std::ptr::{null, null_mut};
 
 bitflags! {
     /// `EPOLL_*` for use with [`Epoll::new`].
@@ -433,7 +439,7 @@ impl<'context, T: AsFd + IntoFd + FromFd> From<OwnedFd> for Epoll<Owning<'contex
 }
 
 pub struct Iter<'context, Context: self::Context> {
-    iter: std::slice::Iter<'context, Event>,
+    iter: core::slice::Iter<'context, Event>,
     context: *const Context,
     _phantom: PhantomData<&'context Context>,
 }

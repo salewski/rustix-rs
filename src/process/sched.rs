@@ -1,6 +1,5 @@
-use crate::imp;
-use crate::io;
 use crate::process::Pid;
+use crate::{imp, io};
 
 /// CpuSet represent a bit-mask of CPUs.
 /// CpuSets are used by `sched_setaffinity` and
@@ -26,7 +25,7 @@ impl CpuSet {
             // be initilized before use. So instead we do this in
             // one step by calling `mem::zeroed()`.
             #[allow(unsafe_code)]
-            cpu_set: unsafe { std::mem::zeroed() },
+            cpu_set: unsafe { core::mem::zeroed() },
         }
     }
 

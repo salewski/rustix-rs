@@ -4,7 +4,7 @@ fn test_statx() {
     use rsix::fs::{FsWord, StatFs, PROC_SUPER_MAGIC};
 
     // Ensure these all have consistent types.
-    let t: StatFs = unsafe { std::mem::zeroed() };
+    let t: StatFs = unsafe { core::mem::zeroed() };
     let _s: FsWord = t.f_type;
     let _u: FsWord = PROC_SUPER_MAGIC;
 

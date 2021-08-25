@@ -19,7 +19,10 @@
 pub(crate) use super::fs::syscalls::*;
 pub(crate) use super::net::syscalls::*;
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(target_pointer_width = "32", target_arch = "arm"),
+    all(target_pointer_width = "32", feature = "vectored")
+))]
 use super::arch::choose::syscall6_readonly;
 use super::arch::choose::{
     syscall0_readonly, syscall1, syscall1_noreturn, syscall1_readonly, syscall2, syscall2_readonly,
@@ -38,7 +41,7 @@ use super::conv::{
 use super::fs::Mode;
 use super::io::{
     epoll, Advice as IoAdvice, DupFlags, EventfdFlags, MapFlags, MlockFlags, MprotectFlags,
-    MremapFlags, PipeFlags, PollFd, ProtFlags, ReadWriteFlags, UserfaultfdFlags,
+    MremapFlags, PipeFlags, PollFd, ProtFlags, UserfaultfdFlags,
 };
 #[cfg(not(target_os = "wasi"))]
 use super::io::{Termios, Winsize};
@@ -48,6 +51,7 @@ use super::rand::GetRandomFlags;
 use super::reg::nr;
 use super::thread::{FutexFlags, FutexOperation};
 use super::time::{ClockId, Timespec};
+use crate::c_types::{c_int, c_uint, c_void};
 use crate::io;
 use crate::io::{OwnedFd, RawFd};
 #[cfg(feature = "procfs")]
@@ -55,7 +59,13 @@ use crate::path::DecInt;
 use crate::process::{
     Cpuid, Gid, MembarrierCommand, MembarrierQuery, Pid, Rlimit, Uid, WaitOptions, WaitStatus,
 };
+use crate::std_ffi::CStr;
 use crate::time::NanosleepRelativeResult;
+use alloc::borrow::Cow;
+use alloc::vec::Vec;
+#[cfg(target_pointer_width = "32")]
+use core::convert::TryInto;
+use core::mem::{size_of_val, MaybeUninit};
 use io_lifetimes::{AsFd, BorrowedFd};
 #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
 use linux_raw_sys::general::__NR_epoll_pwait;
@@ -70,12 +80,11 @@ use linux_raw_sys::general::{
     __NR_epoll_create1, __NR_epoll_ctl, __NR_execve, __NR_exit, __NR_exit_group, __NR_fchdir,
     __NR_futex, __NR_getcwd, __NR_getpid, __NR_getppid, __NR_getpriority, __NR_gettid, __NR_ioctl,
     __NR_madvise, __NR_mlock, __NR_mprotect, __NR_munlock, __NR_munmap, __NR_nanosleep, __NR_pipe2,
-    __NR_prctl, __NR_pread64, __NR_preadv, __NR_pwrite64, __NR_pwritev, __NR_read, __NR_readv,
-    __NR_sched_getaffinity, __NR_sched_setaffinity, __NR_sched_yield, __NR_set_tid_address,
-    __NR_setpriority, __NR_uname, __NR_wait4, __NR_write, __NR_writev, __kernel_gid_t,
-    __kernel_pid_t, __kernel_timespec, __kernel_uid_t, epoll_event, EPOLL_CTL_ADD, EPOLL_CTL_DEL,
-    EPOLL_CTL_MOD, FIONBIO, FIONREAD, PR_SET_NAME, SIGCHLD, TCGETS, TIMER_ABSTIME, TIOCEXCL,
-    TIOCGWINSZ, TIOCNXCL,
+    __NR_prctl, __NR_pread64, __NR_pwrite64, __NR_read, __NR_sched_getaffinity,
+    __NR_sched_setaffinity, __NR_sched_yield, __NR_set_tid_address, __NR_setpriority, __NR_uname,
+    __NR_wait4, __NR_write, __kernel_gid_t, __kernel_pid_t, __kernel_timespec, __kernel_uid_t,
+    epoll_event, EPOLL_CTL_ADD, EPOLL_CTL_DEL, EPOLL_CTL_MOD, FIONBIO, FIONREAD, PR_SET_NAME,
+    SIGCHLD, TCGETS, TIMER_ABSTIME, TIOCEXCL, TIOCGWINSZ, TIOCNXCL,
 };
 #[cfg(not(any(target_arch = "aarch64", target_arch = "riscv64")))]
 use linux_raw_sys::general::{__NR_dup2, __NR_pipe, __NR_poll};
@@ -89,16 +98,11 @@ use linux_raw_sys::general::{__NR_mmap2, __NR_set_thread_area};
 use linux_raw_sys::general::{__NR_ppoll, sigset_t};
 use linux_raw_sys::v5_11::general::__NR_mremap;
 use linux_raw_sys::v5_4::general::{
-    __NR_clone, __NR_eventfd2, __NR_getrandom, __NR_membarrier, __NR_mlock2, __NR_preadv2,
-    __NR_prlimit64, __NR_pwritev2, __NR_userfaultfd,
+    __NR_clone, __NR_eventfd2, __NR_getrandom, __NR_membarrier, __NR_mlock2, __NR_prlimit64,
+    __NR_userfaultfd,
 };
-use std::borrow::Cow;
-#[cfg(target_pointer_width = "32")]
-use std::convert::TryInto;
-use std::ffi::CStr;
+#[cfg(feature = "vectored")]
 use std::io::{IoSlice, IoSliceMut};
-use std::mem::{size_of_val, MaybeUninit};
-use std::os::raw::{c_int, c_uint, c_void};
 #[cfg(target_pointer_width = "64")]
 use {super::conv::loff_t_from_u64, linux_raw_sys::general::__NR_mmap};
 #[cfg(target_pointer_width = "32")]
@@ -222,6 +226,7 @@ pub(crate) fn pread(fd: BorrowedFd<'_>, buf: &mut [u8], pos: u64) -> io::Result<
     }
 }
 
+#[cfg(feature = "vectored")]
 pub(crate) fn readv(fd: BorrowedFd<'_>, bufs: &[IoSliceMut]) -> io::Result<usize> {
     let (bufs_addr, bufs_len) = slice(bufs);
 
@@ -235,6 +240,7 @@ pub(crate) fn readv(fd: BorrowedFd<'_>, bufs: &[IoSliceMut]) -> io::Result<usize
     }
 }
 
+#[cfg(feature = "vectored")]
 pub(crate) fn preadv(fd: BorrowedFd<'_>, bufs: &[IoSliceMut], pos: u64) -> io::Result<usize> {
     let (bufs_addr, bufs_len) = slice(bufs);
 
@@ -261,6 +267,7 @@ pub(crate) fn preadv(fd: BorrowedFd<'_>, bufs: &[IoSliceMut], pos: u64) -> io::R
     }
 }
 
+#[cfg(feature = "vectored")]
 pub(crate) fn preadv2(
     fd: BorrowedFd<'_>,
     bufs: &[IoSliceMut],
@@ -348,6 +355,7 @@ pub(crate) fn pwrite(fd: BorrowedFd<'_>, buf: &[u8], pos: u64) -> io::Result<usi
     }
 }
 
+#[cfg(feature = "vectored")]
 #[inline]
 pub(crate) fn writev(fd: BorrowedFd<'_>, bufs: &[IoSlice]) -> io::Result<usize> {
     let (bufs_addr, bufs_len) = slice(bufs);
@@ -362,6 +370,7 @@ pub(crate) fn writev(fd: BorrowedFd<'_>, bufs: &[IoSlice]) -> io::Result<usize> 
     }
 }
 
+#[cfg(feature = "vectored")]
 #[inline]
 pub(crate) fn pwritev(fd: BorrowedFd<'_>, bufs: &[IoSlice], pos: u64) -> io::Result<usize> {
     let (bufs_addr, bufs_len) = slice(bufs);
@@ -389,6 +398,7 @@ pub(crate) fn pwritev(fd: BorrowedFd<'_>, bufs: &[IoSlice], pos: u64) -> io::Res
     }
 }
 
+#[cfg(feature = "vectored")]
 #[inline]
 pub(crate) fn pwritev2(
     fd: BorrowedFd<'_>,
@@ -550,7 +560,7 @@ pub fn CPU_COUNT_S(size: usize, cpuset: &RawCpuSet) -> u32 {
 #[allow(non_snake_case)]
 #[inline]
 pub fn CPU_COUNT(cpuset: &RawCpuSet) -> u32 {
-    CPU_COUNT_S(std::mem::size_of::<RawCpuSet>(), cpuset)
+    CPU_COUNT_S(core::mem::size_of::<RawCpuSet>(), cpuset)
 }
 
 #[inline]
@@ -1550,7 +1560,7 @@ pub(crate) fn getrlimit(limit: Resource) -> Rlimit {
             nr(__NR_prlimit64),
             c_uint(0),
             c_uint(limit as c_uint),
-            void_star(std::ptr::null_mut()),
+            void_star(core::ptr::null_mut()),
             out(&mut result),
         )) {
             Ok(()) => {
@@ -1598,7 +1608,7 @@ pub(crate) fn getrlimit(limit: Resource) -> Rlimit {
             nr(__NR_prlimit64),
             c_uint(0),
             c_uint(limit as c_uint),
-            void_star(std::ptr::null_mut()),
+            void_star(core::ptr::null_mut()),
             out(&mut result),
         ));
         let result = result.assume_init();
@@ -1635,8 +1645,8 @@ pub fn execve(path: &CStr, args: &[Cow<'_, CStr>], env_vars: &[Cow<'_, CStr>]) -
         .into_iter()
         .map(|cstr| CStr::as_ptr(cstr))
         .collect();
-    argv.push(std::ptr::null());
-    envs.push(std::ptr::null());
+    argv.push(core::ptr::null());
+    envs.push(core::ptr::null());
     unsafe {
         ret(syscall3_readonly(
             nr(__NR_execve),

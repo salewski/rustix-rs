@@ -2,10 +2,10 @@
 
 #[test]
 fn test_mmap() {
+    use core::ptr::null_mut;
+    use core::slice;
     use rsix::fs::{cwd, openat, Mode, OFlags};
     use rsix::io::{mmap, munmap, write, MapFlags, ProtFlags};
-    use std::ptr::null_mut;
-    use std::slice;
 
     let tmp = tempfile::tempdir().unwrap();
     let dir = openat(&cwd(), tmp.path(), OFlags::RDONLY, Mode::empty()).unwrap();
@@ -57,9 +57,9 @@ fn test_mmap() {
 
 #[test]
 fn test_mmap_anonymous() {
+    use core::ptr::null_mut;
+    use core::slice;
     use rsix::io::{mmap_anonymous, munmap, MapFlags, ProtFlags};
-    use std::ptr::null_mut;
-    use std::slice;
 
     unsafe {
         let addr = mmap_anonymous(null_mut(), 8192, ProtFlags::READ, MapFlags::PRIVATE).unwrap();

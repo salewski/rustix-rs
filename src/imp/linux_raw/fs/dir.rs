@@ -1,12 +1,12 @@
 use super::FileType;
 use crate::as_ptr;
 use crate::io::{self, OwnedFd};
+use crate::std_ffi::{CStr, CString};
+use alloc::borrow::ToOwned;
+use alloc::vec::Vec;
+use core::mem::size_of;
 use io_lifetimes::{AsFd, BorrowedFd, IntoFd};
 use linux_raw_sys::general::linux_dirent64;
-#[cfg(target_os = "wasi")]
-use std::ffi::CString;
-use std::ffi::{CStr, CString};
-use std::mem::size_of;
 
 /// `DIR*`
 pub struct Dir {

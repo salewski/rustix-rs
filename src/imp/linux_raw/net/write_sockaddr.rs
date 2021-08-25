@@ -3,8 +3,8 @@
 #![allow(unsafe_code)]
 
 use super::{SocketAddr, SocketAddrStorage, SocketAddrUnix};
-use std::mem::size_of;
-use std::net::{SocketAddrV4, SocketAddrV6};
+use crate::std_net::{SocketAddrV4, SocketAddrV6};
+use core::mem::size_of;
 
 pub(crate) unsafe fn write_sockaddr(addr: &SocketAddr, storage: *mut SocketAddrStorage) -> usize {
     match addr {
@@ -27,7 +27,7 @@ pub(crate) unsafe fn encode_sockaddr_v4(v4: &SocketAddrV4) -> linux_raw_sys::gen
 
 unsafe fn write_sockaddr_v4(v4: &SocketAddrV4, storage: *mut SocketAddrStorage) -> usize {
     let encoded = encode_sockaddr_v4(v4);
-    std::ptr::write(storage.cast::<_>(), encoded);
+    core::ptr::write(storage.cast::<_>(), encoded);
     size_of::<linux_raw_sys::general::sockaddr_in>()
 }
 
@@ -47,7 +47,7 @@ pub(crate) unsafe fn encode_sockaddr_v6(v6: &SocketAddrV6) -> linux_raw_sys::gen
 
 unsafe fn write_sockaddr_v6(v6: &SocketAddrV6, storage: *mut SocketAddrStorage) -> usize {
     let encoded = encode_sockaddr_v6(v6);
-    std::ptr::write(storage.cast::<_>(), encoded);
+    core::ptr::write(storage.cast::<_>(), encoded);
     size_of::<linux_raw_sys::general::sockaddr_in6>()
 }
 
@@ -60,14 +60,14 @@ pub(crate) unsafe fn encode_sockaddr_unix(
     };
     let bytes = unix.path().to_bytes();
     for (i, b) in bytes.iter().enumerate() {
-        encoded.sun_path[i] = *b as std::os::raw::c_char;
+        encoded.sun_path[i] = *b as crate::c_types::c_char;
     }
-    encoded.sun_path[bytes.len()] = b'\0' as std::os::raw::c_char;
+    encoded.sun_path[bytes.len()] = b'\0' as crate::c_types::c_char;
     encoded
 }
 
 unsafe fn write_sockaddr_unix(unix: &SocketAddrUnix, storage: *mut SocketAddrStorage) -> usize {
     let encoded = encode_sockaddr_unix(unix);
-    std::ptr::write(storage.cast::<_>(), encoded);
+    core::ptr::write(storage.cast::<_>(), encoded);
     super::offsetof_sun_path() + unix.path().to_bytes().len() + 1
 }

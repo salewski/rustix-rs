@@ -26,7 +26,7 @@ pub use socketpair::socketpair;
 #[cfg(windows)]
 pub use wsa::{wsa_cleanup, wsa_startup};
 
+pub use crate::std_net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 #[cfg(not(windows))]
 pub use imp::net::SocketAddrUnix;
 pub use imp::net::{SocketAddr, SocketAddrStorage};
-pub use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};

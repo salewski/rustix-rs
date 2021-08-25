@@ -5,6 +5,9 @@ use crate::imp;
 #[cfg(not(target_os = "wasi"))]
 use imp::io::Tcflag;
 
+#[allow(unused_imports)]
+#[cfg(unix)]
+pub(crate) use crate::std_os_io::{AsRawFd, FromRawFd, IntoRawFd, RawFd, RawFd as LibcFd};
 #[cfg(windows)]
 pub(crate) use imp::net::io_lifetimes::{AsFd, AsSocketAsFd, BorrowedFd};
 #[allow(unused_imports)]
@@ -18,15 +21,6 @@ pub(crate) use io_lifetimes::{AsFd, BorrowedFd};
 #[cfg(not(windows))]
 #[cfg(not(io_lifetimes_use_std))]
 pub(crate) use io_lifetimes::{FromFd, IntoFd};
-#[allow(unused_imports)]
-#[cfg(unix)]
-pub(crate) use std::os::unix::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd, RawFd as LibcFd};
-#[allow(unused_imports)]
-#[cfg(target_os = "wasi")]
-pub(crate) use {
-    libc::c_int as LibcFd,
-    std::os::wasi::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd},
-};
 
 #[cfg(not(windows))]
 mod close;
@@ -106,11 +100,16 @@ pub use poll::{poll, PollFd, PollFlags};
 #[cfg(all(feature = "procfs", any(target_os = "android", target_os = "linux")))]
 pub use procfs::proc_self_fd;
 #[cfg(not(windows))]
-pub use read_write::{pread, pwrite, read, readv, write, writev};
+pub use read_write::{pread, pwrite, read, write};
+#[cfg(feature = "vectored")]
 #[cfg(not(any(windows, target_os = "redox")))]
 pub use read_write::{preadv, pwritev};
+#[cfg(feature = "vectored")]
 #[cfg(any(linux_raw, all(libc, any(target_os = "android", target_os = "linux"))))]
 pub use read_write::{preadv2, pwritev2, ReadWriteFlags};
+#[cfg(feature = "vectored")]
+#[cfg(not(windows))]
+pub use read_write::{readv, writev};
 #[cfg(not(windows))]
 pub use stdio::{stderr, stdin, stdout, take_stderr, take_stdin, take_stdout};
 #[cfg(any(linux_raw, all(libc, any(target_os = "android", target_os = "linux"))))]

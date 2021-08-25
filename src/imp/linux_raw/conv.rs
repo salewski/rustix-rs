@@ -18,18 +18,18 @@ use super::io::error::{
 };
 use super::reg::{raw_arg, ArgNumber, ArgReg, RetReg, R0};
 use super::time::ClockId;
+use crate::c_types::{c_int, c_uint, c_void};
 use crate::io::{self, AsRawFd, FromRawFd, OwnedFd};
+use crate::std_ffi::CStr;
 use crate::{as_mut_ptr, as_ptr};
+use core::mem::{transmute, MaybeUninit};
+use core::ptr::null;
 use io_lifetimes::BorrowedFd;
 #[cfg(target_pointer_width = "64")]
 use linux_raw_sys::general::__kernel_loff_t;
 #[cfg(target_pointer_width = "32")]
 use linux_raw_sys::general::O_LARGEFILE;
 use linux_raw_sys::general::{__kernel_clockid_t, socklen_t};
-use std::ffi::CStr;
-use std::mem::{transmute, MaybeUninit};
-use std::os::raw::{c_int, c_uint, c_void};
-use std::ptr::null;
 
 /// Convert `SYS_*` constants for socketcall.
 #[cfg(target_arch = "x86")]
@@ -68,7 +68,7 @@ pub(super) fn zero<'a, Num: ArgNumber>() -> ArgReg<'a, Num> {
 
 #[inline]
 pub(super) fn size_of<'a, T: Sized, Num: ArgNumber>() -> ArgReg<'a, Num> {
-    raw_arg(std::mem::size_of::<T>())
+    raw_arg(core::mem::size_of::<T>())
 }
 
 #[inline]
@@ -228,7 +228,7 @@ pub(super) fn dev_t<'a, Num: ArgNumber>(dev: u64) -> ArgReg<'a, Num> {
 #[cfg(target_pointer_width = "32")]
 #[inline]
 pub(super) fn dev_t<'a, Num: ArgNumber>(dev: u64) -> io::Result<ArgReg<'a, Num>> {
-    use std::convert::TryInto;
+    use core::convert::TryInto;
     dev.try_into().map(raw_arg).map_err(|_err| io::Error::INVAL)
 }
 

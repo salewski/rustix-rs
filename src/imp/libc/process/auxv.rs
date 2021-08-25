@@ -1,5 +1,5 @@
 #[cfg(any(target_os = "android", target_os = "linux"))]
-use std::ffi::CStr;
+use crate::std_ffi::CStr;
 
 #[inline]
 pub(crate) fn page_size() -> usize {

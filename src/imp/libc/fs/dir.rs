@@ -1,6 +1,11 @@
 use super::FileType;
 use crate::imp::libc::conv::owned_fd;
 use crate::io::{self, OwnedFd, RawFd};
+use crate::std_ffi::CStr;
+#[cfg(target_os = "wasi")]
+use crate::std_ffi::CString;
+use core::mem::zeroed;
+use core::ptr::NonNull;
 use errno::{errno, set_errno, Errno};
 use io_lifetimes::{AsFd, BorrowedFd, IntoFd};
 #[cfg(not(any(
@@ -25,11 +30,6 @@ use libc::readdir as libc_readdir;
     target_os = "linux"
 ))]
 use libc::{dirent64 as libc_dirent, readdir64 as libc_readdir};
-use std::ffi::CStr;
-#[cfg(target_os = "wasi")]
-use std::ffi::CString;
-use std::mem::zeroed;
-use std::ptr::NonNull;
 
 /// `DIR*`
 #[repr(transparent)]
@@ -92,7 +92,7 @@ impl Dir {
                 check_dirent_layout(&*dirent_ptr);
 
                 let result = DirEntry {
-                    dirent: read_dirent(std::mem::transmute(&*dirent_ptr)),
+                    dirent: read_dirent(core::mem::transmute(&*dirent_ptr)),
 
                     #[cfg(target_os = "wasi")]
                     name: CStr::from_ptr((*dirent_ptr).d_name.as_ptr()).to_owned(),
@@ -289,7 +289,7 @@ struct libc_dirent {
 #[cfg(target_os = "openbsd")]
 fn check_dirent_layout(dirent: &libc::dirent) {
     use crate::as_ptr;
-    use std::mem::{align_of, size_of};
+    use core::mem::{align_of, size_of};
 
     // Check that the basic layouts match.
     assert_eq!(size_of::<libc_dirent>(), size_of::<libc::dirent>());

@@ -8,9 +8,9 @@ use super::SocketAddrUnix;
 use crate::as_ptr;
 use crate::io;
 #[cfg(not(windows))]
-use std::ffi::CStr;
-use std::mem::size_of;
-use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
+use crate::std_ffi::CStr;
+use crate::std_net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
+use core::mem::size_of;
 
 // This must match the header of `sockaddr`.
 #[repr(C)]

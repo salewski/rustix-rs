@@ -40,8 +40,12 @@ use super::{
     AddressFamily, Protocol, RecvFlags, SendFlags, Shutdown, SocketAddr, SocketAddrUnix,
     SocketFlags, SocketType,
 };
+use crate::c_types::{c_int, c_uint};
 use crate::io;
 use crate::io::OwnedFd;
+use crate::std_net::{SocketAddrV4, SocketAddrV6};
+use core::convert::TryInto;
+use core::mem::MaybeUninit;
 use io_lifetimes::BorrowedFd;
 #[cfg(not(target_arch = "x86"))]
 use linux_raw_sys::general::{
@@ -57,10 +61,6 @@ use linux_raw_sys::general::{
 )))]
 use linux_raw_sys::general::{__NR_recv, __NR_send};
 use linux_raw_sys::general::{sockaddr, sockaddr_in, sockaddr_in6, sockaddr_un, socklen_t};
-use std::convert::TryInto;
-use std::mem::MaybeUninit;
-use std::net::{SocketAddrV4, SocketAddrV6};
-use std::os::raw::{c_int, c_uint};
 #[cfg(target_arch = "x86")]
 use {
     super::super::conv::x86_sys,
@@ -223,7 +223,7 @@ pub(crate) fn accept_with(fd: BorrowedFd<'_>, flags: AcceptFlags) -> io::Result<
 pub(crate) fn acceptfrom(fd: BorrowedFd<'_>) -> io::Result<(OwnedFd, SocketAddr)> {
     #[cfg(not(target_arch = "x86"))]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         let fd = ret_owned_fd(syscall3(
             nr(__NR_accept),
@@ -238,7 +238,7 @@ pub(crate) fn acceptfrom(fd: BorrowedFd<'_>) -> io::Result<(OwnedFd, SocketAddr)
     }
     #[cfg(target_arch = "x86")]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         let fd = ret_owned_fd(syscall2(
             nr(__NR_socketcall),
@@ -263,7 +263,7 @@ pub(crate) fn acceptfrom_with(
 ) -> io::Result<(OwnedFd, SocketAddr)> {
     #[cfg(not(target_arch = "x86"))]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         let fd = ret_owned_fd(syscall4(
             nr(__NR_accept4),
@@ -279,7 +279,7 @@ pub(crate) fn acceptfrom_with(
     }
     #[cfg(target_arch = "x86")]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         let fd = ret_owned_fd(syscall2(
             nr(__NR_socketcall),
@@ -542,7 +542,7 @@ pub(crate) fn recvfrom(
 
     #[cfg(not(target_arch = "x86"))]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         let nread = ret_usize(syscall6(
             nr(__NR_recvfrom),
@@ -560,7 +560,7 @@ pub(crate) fn recvfrom(
     }
     #[cfg(target_arch = "x86")]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         let nread = ret_usize(syscall2(
             nr(__NR_socketcall),
@@ -585,7 +585,7 @@ pub(crate) fn recvfrom(
 pub(crate) fn getpeername(fd: BorrowedFd<'_>) -> io::Result<SocketAddr> {
     #[cfg(not(target_arch = "x86"))]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         ret(syscall3(
             nr(__NR_getpeername),
@@ -600,7 +600,7 @@ pub(crate) fn getpeername(fd: BorrowedFd<'_>) -> io::Result<SocketAddr> {
     }
     #[cfg(target_arch = "x86")]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         ret(syscall2(
             nr(__NR_socketcall),
@@ -622,7 +622,7 @@ pub(crate) fn getpeername(fd: BorrowedFd<'_>) -> io::Result<SocketAddr> {
 pub(crate) fn getsockname(fd: BorrowedFd<'_>) -> io::Result<SocketAddr> {
     #[cfg(not(target_arch = "x86"))]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         ret(syscall3(
             nr(__NR_getsockname),
@@ -637,7 +637,7 @@ pub(crate) fn getsockname(fd: BorrowedFd<'_>) -> io::Result<SocketAddr> {
     }
     #[cfg(target_arch = "x86")]
     unsafe {
-        let mut addrlen = std::mem::size_of::<sockaddr>() as socklen_t;
+        let mut addrlen = core::mem::size_of::<sockaddr>() as socklen_t;
         let mut storage = MaybeUninit::<sockaddr>::uninit();
         ret(syscall2(
             nr(__NR_socketcall),
@@ -826,13 +826,13 @@ pub(crate) fn listen(fd: BorrowedFd<'_>, backlog: c_int) -> io::Result<()> {
 }
 
 pub(crate) mod sockopt {
+    use crate::c_types::{c_int, c_uint};
     use crate::io;
     use crate::net::sockopt::Timeout;
     use crate::net::{Ipv4Addr, Ipv6Addr, SocketType};
+    use core::convert::TryInto;
+    use core::time::Duration;
     use io_lifetimes::BorrowedFd;
-    use std::convert::TryInto;
-    use std::os::raw::{c_int, c_uint};
-    use std::time::Duration;
 
     // TODO use Duration::ZERO when we don't need 1.51 support
     const DURATION_ZERO: Duration = Duration::from_secs(0);
@@ -843,7 +843,7 @@ pub(crate) mod sockopt {
         #[cfg(not(target_arch = "x86"))]
         unsafe {
             let mut value = MaybeUninit::<T>::uninit();
-            let mut optlen = std::mem::size_of::<T>();
+            let mut optlen = core::mem::size_of::<T>();
             ret(syscall5(
                 nr(__NR_getsockopt),
                 borrowed_fd(fd),
@@ -854,7 +854,7 @@ pub(crate) mod sockopt {
             ))?;
             assert_eq!(
                 optlen as usize,
-                std::mem::size_of::<T>(),
+                core::mem::size_of::<T>(),
                 "unexpected getsockopt size"
             );
             Ok(value.assume_init())
@@ -862,7 +862,7 @@ pub(crate) mod sockopt {
         #[cfg(target_arch = "x86")]
         unsafe {
             let mut value = MaybeUninit::<T>::uninit();
-            let mut optlen = std::mem::size_of::<T>();
+            let mut optlen = core::mem::size_of::<T>();
             ret(syscall2(
                 nr(__NR_socketcall),
                 x86_sys(SYS_GETSOCKOPT),
@@ -876,7 +876,7 @@ pub(crate) mod sockopt {
             ))?;
             assert_eq!(
                 optlen as usize,
-                std::mem::size_of::<T>(),
+                core::mem::size_of::<T>(),
                 "unexpected getsockopt size"
             );
             Ok(value.assume_init())
@@ -888,7 +888,7 @@ pub(crate) mod sockopt {
         use super::*;
         #[cfg(not(target_arch = "x86"))]
         unsafe {
-            let optlen = std::mem::size_of::<T>().try_into().unwrap();
+            let optlen = core::mem::size_of::<T>().try_into().unwrap();
             ret(syscall5_readonly(
                 nr(__NR_setsockopt),
                 borrowed_fd(fd),
@@ -900,7 +900,7 @@ pub(crate) mod sockopt {
         }
         #[cfg(target_arch = "x86")]
         unsafe {
-            let optlen = std::mem::size_of::<T>().try_into().unwrap();
+            let optlen = core::mem::size_of::<T>().try_into().unwrap();
             ret(syscall2_readonly(
                 nr(__NR_socketcall),
                 x86_sys(SYS_SETSOCKOPT),
@@ -1015,7 +1015,7 @@ pub(crate) mod sockopt {
                     tv_sec: timeout
                         .as_secs()
                         .try_into()
-                        .unwrap_or(std::os::raw::c_long::MAX),
+                        .unwrap_or(crate::c_types::c_long::MAX),
                     tv_usec: timeout.subsec_micros() as _,
                 };
                 if timeout.tv_sec == 0 && timeout.tv_usec == 0 {

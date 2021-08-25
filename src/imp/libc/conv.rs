@@ -8,9 +8,9 @@ use crate::io;
 use crate::io::{
     AsRawFd, BorrowedFd, FromFd, FromRawFd, IntoFd, IntoRawFd, LibcFd, OwnedFd, RawFd,
 };
+use crate::std_ffi::CStr;
 #[cfg(windows)]
-use std::convert::TryInto;
-use std::ffi::CStr;
+use core::convert::TryInto;
 
 #[inline]
 pub(super) fn c_str(c: &CStr) -> *const libc::c_char {

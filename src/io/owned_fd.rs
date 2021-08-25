@@ -9,8 +9,8 @@
 use crate::io::{close, AsFd, AsRawFd, BorrowedFd, FromRawFd, IntoRawFd, RawFd};
 #[cfg(not(io_lifetimes_use_std))]
 use crate::io::{FromFd, IntoFd};
-use std::fmt;
-use std::mem::{forget, ManuallyDrop};
+use core::fmt;
+use core::mem::{forget, ManuallyDrop};
 
 /// A wrapper around `io_lifetimes::OwnedFd` which closes the file descriptor
 /// using rsix's own `close` rather than libc's `close`.

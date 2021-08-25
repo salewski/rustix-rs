@@ -24,17 +24,18 @@ use super::{EventfdFlags, UserfaultfdFlags};
 #[cfg(any(target_os = "android", target_os = "linux"))]
 use super::{MlockFlags, ReadWriteFlags};
 use crate::io::{self, OwnedFd, RawFd};
+#[cfg(not(any(target_os = "fuchsia", target_os = "wasi")))]
+use crate::std_ffi::CStr;
+use core::cmp::min;
+use core::convert::TryInto;
+use core::mem::MaybeUninit;
+#[cfg(not(any(target_os = "redox", target_env = "newlib")))]
+use core::sync::atomic::{AtomicUsize, Ordering};
 use errno::errno;
 use io_lifetimes::{AsFd, BorrowedFd};
 use libc::{c_int, c_void};
-use std::cmp::min;
-use std::convert::TryInto;
-#[cfg(not(any(target_os = "fuchsia", target_os = "wasi")))]
-use std::ffi::CStr;
+#[cfg(feature = "vectored")]
 use std::io::{IoSlice, IoSliceMut};
-use std::mem::MaybeUninit;
-#[cfg(not(any(target_os = "redox", target_env = "newlib")))]
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub(crate) fn read(fd: BorrowedFd<'_>, buf: &mut [u8]) -> io::Result<usize> {
     let nread = unsafe {

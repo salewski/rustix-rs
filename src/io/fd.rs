@@ -7,7 +7,7 @@ use io_lifetimes::AsFd;
     all(linux_raw, feature = "procfs"),
     all(libc, not(any(target_os = "fuchsia", target_os = "wasi")))
 ))]
-use {io_lifetimes::BorrowedFd, std::ffi::CString};
+use {crate::std_ffi::CString, alloc::vec::Vec, io_lifetimes::BorrowedFd};
 
 #[cfg(not(target_os = "wasi"))]
 pub use imp::io::DupFlags;

@@ -10,7 +10,7 @@ pub use types::{
     ProtFlags, ReadWriteFlags, Tcflag, Termios, UserfaultfdFlags, Winsize, ICANON, PIPE_BUF,
 };
 
-use std::os::raw::{c_int, c_uint};
+use crate::c_types::{c_int, c_uint};
 
 pub(crate) const AT_FDCWD: c_int = linux_raw_sys::general::AT_FDCWD;
 pub(crate) const STDIN_FILENO: c_uint = linux_raw_sys::general::STDIN_FILENO;

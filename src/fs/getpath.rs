@@ -1,6 +1,6 @@
+use crate::std_ffi::CString;
 use crate::{imp, io};
 use io_lifetimes::AsFd;
-use std::ffi::CString;
 
 /// `fcntl(fd, F_GETPATH)`
 ///

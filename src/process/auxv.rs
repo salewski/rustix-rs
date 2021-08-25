@@ -4,7 +4,7 @@
 
 use crate::imp;
 #[cfg(any(linux_raw, all(libc, any(target_os = "android", target_os = "linux"))))]
-use std::ffi::CStr;
+use crate::std_ffi::CStr;
 #[cfg(target_vendor = "mustang")]
 use std::os::raw::c_char;
 

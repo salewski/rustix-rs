@@ -1,8 +1,8 @@
 #[cfg(any(target_os = "android", target_os = "linux"))]
 #[test]
 fn test_eventfd() {
+    use core::mem::size_of;
     use rsix::io::{eventfd, read, write, EventfdFlags};
-    use std::mem::size_of;
     use std::thread;
 
     let efd = eventfd(0, EventfdFlags::CLOEXEC).unwrap();

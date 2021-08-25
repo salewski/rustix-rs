@@ -7,9 +7,9 @@ use crate::io;
 #[cfg(not(windows))]
 use crate::path;
 #[cfg(not(windows))]
-use std::ffi::{CStr, CString};
-use std::fmt;
-use std::net::{SocketAddrV4, SocketAddrV6};
+use crate::std_ffi::{CStr, CString};
+use crate::std_net::{SocketAddrV4, SocketAddrV6};
+use core::fmt;
 
 /// `struct sockaddr_un`
 #[cfg(not(windows))]

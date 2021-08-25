@@ -70,19 +70,19 @@ use super::{Statx, StatxFlags};
 #[cfg(not(target_os = "wasi"))]
 use crate::io::RawFd;
 use crate::io::{self, OwnedFd};
-use io_lifetimes::BorrowedFd;
-use std::convert::TryInto;
-use std::ffi::CStr;
+use crate::std_ffi::CStr;
 #[cfg(any(target_os = "ios", target_os = "macos"))]
-use std::ffi::CString;
-use std::io::SeekFrom;
+use crate::std_ffi::CString;
+use crate::std_io::SeekFrom;
+use core::convert::TryInto;
 #[cfg(any(target_os = "android", target_os = "linux"))]
-use std::mem::size_of;
+use core::mem::size_of;
 #[cfg(target_os = "linux")]
-use std::mem::transmute;
-use std::mem::MaybeUninit;
+use core::mem::transmute;
+use core::mem::MaybeUninit;
 #[cfg(any(target_os = "android", target_os = "linux"))]
-use std::ptr::null_mut;
+use core::ptr::null_mut;
+use io_lifetimes::BorrowedFd;
 #[cfg(any(target_os = "ios", target_os = "macos"))]
 use {
     super::super::conv::nonnegative_ret,

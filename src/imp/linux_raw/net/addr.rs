@@ -6,10 +6,10 @@
 #![allow(unsafe_code)]
 
 use super::{read_sockaddr, write_sockaddr, AddressFamily};
+use crate::std_ffi::{CStr, CString};
+use crate::std_net::{SocketAddrV4, SocketAddrV6};
 use crate::{io, path};
-use std::ffi::{CStr, CString};
-use std::fmt;
-use std::net::{SocketAddrV4, SocketAddrV6};
+use core::fmt;
 
 /// `struct sockaddr_un`
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -54,7 +54,22 @@ impl fmt::Debug for SocketAddrUnix {
 }
 
 /// `struct sockaddr_storage` as a Rust enum.
-#[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+#[cfg(feature = "std")]
+#[derive(Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
+#[doc(alias = "sockaddr")]
+#[non_exhaustive]
+pub enum SocketAddr {
+    /// `struct sockaddr_in`
+    V4(SocketAddrV4),
+    /// `struct sockaddr_in6`
+    V6(SocketAddrV6),
+    /// `struct sockaddr_un`
+    Unix(SocketAddrUnix),
+}
+
+/// `struct sockaddr_storage` as a Rust enum.
+#[cfg(feature = "no_std_demo")] // Disable `Ord` and `ParialOrd` as no-std-net lacks these.
+#[derive(Clone, PartialEq, Eq, Hash)]
 #[doc(alias = "sockaddr")]
 #[non_exhaustive]
 pub enum SocketAddr {

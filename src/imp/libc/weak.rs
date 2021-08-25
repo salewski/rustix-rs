@@ -26,9 +26,9 @@
 #![allow(dead_code, unused_macros)]
 #![allow(clippy::doc_markdown)]
 
-use std::ffi::CStr;
-use std::sync::atomic::{self, AtomicUsize, Ordering};
-use std::{marker, mem};
+use crate::std_ffi::CStr;
+use core::sync::atomic::{self, AtomicUsize, Ordering};
+use core::{marker, mem};
 
 macro_rules! weak {
     (fn $name:ident($($t:ty),*) -> $ret:ty) => (

@@ -2,8 +2,8 @@
 
 use super::super::elf::*;
 use super::super::process::exe_phdrs_slice;
-use std::ffi::c_void;
-use std::ptr::null;
+use core::ffi::c_void;
+use core::ptr::null;
 
 /// For use with `set_thread_area`.
 #[cfg(target_arch = "x86")]

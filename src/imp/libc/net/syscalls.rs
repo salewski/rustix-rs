@@ -12,11 +12,11 @@ use crate::as_ptr;
 use crate::io;
 use crate::io::BorrowedFd;
 use crate::io::OwnedFd;
-use std::convert::TryInto;
-use std::mem::{size_of, MaybeUninit};
-use std::net::{SocketAddrV4, SocketAddrV6};
+use crate::std_net::{SocketAddrV4, SocketAddrV6};
+use core::convert::TryInto;
+use core::mem::{size_of, MaybeUninit};
 #[cfg(not(any(target_os = "redox", target_os = "wasi",)))]
-use std::ptr::null_mut;
+use core::ptr::null_mut;
 
 #[cfg(not(any(target_os = "redox", target_os = "wasi")))]
 pub(crate) fn recv(fd: BorrowedFd<'_>, buf: &mut [u8], flags: RecvFlags) -> io::Result<usize> {

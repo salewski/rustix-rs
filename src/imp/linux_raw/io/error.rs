@@ -10,11 +10,11 @@
 #![allow(unsafe_code)]
 #![cfg_attr(not(rustc_attrs), allow(unused_unsafe))]
 
+use crate::c_types::{c_int, c_uint};
 use crate::imp::linux_raw::reg::{RetNumber, RetReg};
 use crate::io::{self, RawFd};
+use core::ffi::c_void;
 use linux_raw_sys::{errno, v5_4};
-use std::ffi::c_void;
-use std::os::raw::{c_int, c_uint};
 
 /// The error type for rsix APIs.
 ///
@@ -33,6 +33,7 @@ impl Error {
     ///
     /// This isn't a `From` conversion because it's expected to be relatively
     /// uncommon.
+    #[cfg(feature = "std")]
     #[inline]
     pub fn from_io_error(io_err: &std::io::Error) -> Option<Self> {
         io_err.raw_os_error().and_then(|raw| {

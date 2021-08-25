@@ -1,7 +1,7 @@
 use crate::imp::libc::conv::borrowed_fd;
 use bitflags::bitflags;
+use core::marker::PhantomData;
 use io_lifetimes::{AsFd, BorrowedFd};
-use std::marker::PhantomData;
 
 bitflags! {
     /// `POLL*`

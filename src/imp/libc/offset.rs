@@ -122,10 +122,7 @@ pub(super) use libc::posix_fadvise64 as libc_posix_fadvise;
 ))))]
 pub(super) use libc::{pread as libc_pread, pwrite as libc_pwrite};
 #[cfg(any(target_os = "android", target_os = "linux", target_os = "emscripten"))]
-pub(super) use libc::{
-    pread64 as libc_pread, preadv64 as libc_preadv, pwrite64 as libc_pwrite,
-    pwritev64 as libc_pwritev,
-};
+pub(super) use libc::{pread64 as libc_pread, pwrite64 as libc_pwrite};
 #[cfg(not(any(
     windows,
     target_os = "android",
@@ -136,6 +133,9 @@ pub(super) use libc::{
     target_os = "redox",
 )))]
 pub(super) use libc::{preadv as libc_preadv, pwritev as libc_pwritev};
+#[cfg(feature = "vectored")]
+#[cfg(any(target_os = "android", target_os = "linux", target_os = "emscripten"))]
+pub(super) use libc::{preadv64 as libc_preadv, pwritev64 as libc_pwritev};
 // macOS added preadv and pwritev in version 11.0
 #[cfg(any(target_os = "ios", target_os = "macos"))]
 mod readwrite_pv {
@@ -155,6 +155,7 @@ mod readwrite_pv {
         ) -> libc::ssize_t
     }
 }
+#[cfg(feature = "vectored")]
 #[cfg(all(target_os = "linux", target_env = "gnu"))]
 pub(super) use libc::{preadv64v2 as libc_preadv2, pwritev64v2 as libc_pwritev2};
 #[cfg(any(target_os = "ios", target_os = "macos"))]

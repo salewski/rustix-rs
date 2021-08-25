@@ -33,8 +33,13 @@ use super::{
     Access, Advice as FsAdvice, AtFlags, FallocateFlags, FdFlags, FlockOperation, MemfdFlags, Mode,
     OFlags, RenameFlags, ResolveFlags, Stat, StatFs, StatxFlags,
 };
+use crate::c_types::{c_int, c_uint};
 use crate::io;
 use crate::io::{OwnedFd, RawFd};
+use crate::std_ffi::CStr;
+use crate::std_io::SeekFrom;
+use core::convert::TryInto;
+use core::mem::MaybeUninit;
 #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
 use io_lifetimes::AsFd;
 use io_lifetimes::BorrowedFd;
@@ -58,11 +63,6 @@ use linux_raw_sys::v5_4::general::{
     __NR_copy_file_range, __NR_memfd_create, __NR_renameat2, __NR_statx, statx, F_GETPIPE_SZ,
     F_GET_SEALS, F_SETPIPE_SZ,
 };
-use std::convert::TryInto;
-use std::ffi::CStr;
-use std::io::SeekFrom;
-use std::mem::MaybeUninit;
-use std::os::raw::{c_int, c_uint};
 #[cfg(target_pointer_width = "32")]
 use {
     super::super::conv::{hi, lo},

@@ -6,10 +6,10 @@
 //! kernel into `&str` references, which assumes that they're NUL-terminated.
 #![allow(unsafe_code)]
 
+use crate::c_types::c_char;
 use crate::imp;
-use std::ffi::CStr;
-use std::fmt;
-use std::os::raw::c_char;
+use crate::std_ffi::CStr;
+use core::fmt;
 
 /// `uname()`—Returns high-level information about the runtime OS and
 /// hardware.

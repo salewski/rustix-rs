@@ -1,3 +1,4 @@
+use alloc::borrow::Cow;
 use rsix::io;
 use rsix::path::Arg;
 #[cfg(feature = "itoa")]

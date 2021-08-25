@@ -1,5 +1,5 @@
+use crate::c_types::c_uint;
 use bitflags::bitflags;
-use std::os::raw::c_uint;
 
 /// A type for holding raw integer socket types.
 #[doc(hidden)]

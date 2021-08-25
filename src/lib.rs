@@ -53,6 +53,10 @@
     feature(naked_functions)
 )]
 #![cfg_attr(io_lifetimes_use_std, feature(io_safety))]
+#![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(feature = "no_std_demo", feature(core_intrinsics))]
+
+extern crate alloc;
 
 /// Re-export `io_lifetimes` since we use its types in our public API, so
 /// that our users don't need to do anything special to use the same version.
@@ -101,3 +105,79 @@ const fn as_ptr<T>(t: &T) -> *const T {
 fn as_mut_ptr<T>(t: &mut T) -> *mut T {
     t
 }
+
+#[cfg(feature = "no_std_demo")]
+use cty as c_types;
+#[cfg(feature = "std")]
+use std::os::raw as c_types;
+
+#[cfg(feature = "no_std_demo")]
+use embedded_ffi as std_ffi;
+#[cfg(feature = "std")]
+use std::ffi as std_ffi;
+
+#[cfg(feature = "no_std_demo")]
+use embedded_ffi as std_os_ffi;
+#[cfg(all(target_os = "hermit", feature = "std"))]
+use std::os::hermit::ext::ffi as std_os_ffi;
+#[cfg(all(unix, feature = "std"))]
+use std::os::unix::ffi as std_os_ffi;
+#[cfg(all(target_os = "wasi", feature = "std"))]
+use std::os::wasi::ffi as std_os_ffi;
+
+#[cfg(all(unix, feature = "std"))]
+use std::os::unix::fs as std_os_fs;
+#[cfg(all(target_os = "wasi", feature = "std"))]
+use std::os::wasi::fs as std_os_fs;
+
+#[cfg(feature = "no_std_demo")]
+use io_lifetimes::std_os_io;
+#[cfg(all(unix, feature = "std"))]
+use std::os::unix::io as std_os_io;
+#[cfg(all(target_os = "wasi", feature = "std"))]
+use std::os::wasi::io as std_os_io;
+
+#[cfg(feature = "std")]
+use std::path as std_path;
+#[cfg(feature = "no_std_demo")]
+use unix_path as std_path;
+
+#[cfg(feature = "no_std_demo")]
+trait AsOsStr {
+    fn as_os_str(&self) -> &crate::std_ffi::OsStr;
+}
+#[cfg(feature = "no_std_demo")]
+trait IntoOsString {
+    fn into_os_string(self) -> crate::std_ffi::OsString;
+}
+#[cfg(feature = "no_std_demo")]
+impl AsOsStr for unix_path::Path {
+    #[inline]
+    fn as_os_str(&self) -> &crate::std_ffi::OsStr {
+        crate::std_os_ffi::OsStrExt::from_bytes(self.as_unix_str().as_bytes())
+    }
+}
+#[cfg(feature = "no_std_demo")]
+impl AsOsStr for unix_path::Component<'_> {
+    #[inline]
+    fn as_os_str(&self) -> &crate::std_ffi::OsStr {
+        crate::std_os_ffi::OsStrExt::from_bytes(self.as_unix_str().as_bytes())
+    }
+}
+#[cfg(feature = "no_std_demo")]
+impl IntoOsString for unix_path::PathBuf {
+    #[inline]
+    fn into_os_string(self) -> crate::std_ffi::OsString {
+        crate::std_os_ffi::OsStringExt::from_vec(self.into_unix_string().into_vec())
+    }
+}
+
+#[cfg(feature = "no_std_demo")]
+use core2::io as std_io;
+#[cfg(feature = "std")]
+use std::io as std_io;
+
+#[cfg(feature = "no_std_demo")]
+use no_std_net as std_net;
+#[cfg(feature = "std")]
+use std::net as std_net;

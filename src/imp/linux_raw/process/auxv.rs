@@ -6,16 +6,17 @@
 #![allow(unsafe_code)]
 
 use super::super::elf::Elf_Phdr;
+use crate::c_types::c_char;
+#[cfg(all(target_env = "gnu", not(target_vendor = "mustang")))]
+use crate::c_types::c_int;
+use crate::std_ffi::CStr;
+use core::ffi::c_void;
+use core::mem::size_of;
+use core::slice;
 use linux_raw_sys::general::{
     AT_EXECFN, AT_HWCAP, AT_NULL, AT_PAGESZ, AT_PHDR, AT_PHENT, AT_PHNUM,
 };
 use linux_raw_sys::v5_4::general::{AT_HWCAP2, AT_SYSINFO_EHDR};
-use std::ffi::{c_void, CStr};
-use std::mem::size_of;
-use std::os::raw::c_char;
-#[cfg(all(target_env = "gnu", not(target_vendor = "mustang")))]
-use std::os::raw::c_int;
-use std::slice;
 
 #[inline]
 pub(crate) fn page_size() -> usize {

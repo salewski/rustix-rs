@@ -5,7 +5,7 @@ bitflags! {
     ///
     /// [`preadv2`]: crate::io::preadv2
     /// [`pwritev2`]: crate::io::pwritev
-    pub struct ReadWriteFlags: std::os::raw::c_uint {
+    pub struct ReadWriteFlags: crate::c_types::c_uint {
         /// `RWF_DSYNC`
         const DSYNC = linux_raw_sys::general::RWF_DSYNC;
         /// `RWF_HIPRI`
@@ -23,7 +23,7 @@ bitflags! {
     /// `O_*` constants for use with [`dup2`].
     ///
     /// [`dup2`]: crate::io::dup2
-    pub struct DupFlags: std::os::raw::c_uint {
+    pub struct DupFlags: crate::c_types::c_uint {
         /// `O_CLOEXEC`
         const CLOEXEC = linux_raw_sys::general::O_CLOEXEC;
     }
@@ -137,7 +137,7 @@ bitflags! {
     /// `O_*` constants for use with [`pipe_with`].
     ///
     /// [`pipe_with`]: crate::io::pipe_with
-    pub struct PipeFlags: std::os::raw::c_uint {
+    pub struct PipeFlags: crate::c_types::c_uint {
         /// `O_CLOEXEC`
         const CLOEXEC = linux_raw_sys::general::O_CLOEXEC;
         /// `O_DIRECT`
@@ -151,7 +151,7 @@ bitflags! {
     /// The `O_*` flags accepted by [`userfaultfd`].
     ///
     /// [`userfaultfd`]: crate::io::userfaultfd
-    pub struct UserfaultfdFlags: std::os::raw::c_uint {
+    pub struct UserfaultfdFlags: crate::c_types::c_uint {
         /// `O_CLOEXEC`
         const CLOEXEC = linux_raw_sys::general::O_CLOEXEC;
         /// `O_NONBLOCK`
@@ -163,7 +163,7 @@ bitflags! {
     /// The `EFD_*` flags accepted by [`eventfd`].
     ///
     /// [`eventfd`]: crate::io::eventfd
-    pub struct EventfdFlags: std::os::raw::c_uint {
+    pub struct EventfdFlags: crate::c_types::c_uint {
         /// `EFD_CLOEXEC`
         const CLOEXEC = linux_raw_sys::general::EFD_CLOEXEC;
         /// `EFD_NONBLOCK`
@@ -248,6 +248,6 @@ pub type Winsize = linux_raw_sys::general::winsize;
 
 pub type Tcflag = linux_raw_sys::general::tcflag_t;
 
-pub const ICANON: std::os::raw::c_uint = linux_raw_sys::general::ICANON;
+pub const ICANON: crate::c_types::c_uint = linux_raw_sys::general::ICANON;
 
 pub const PIPE_BUF: usize = linux_raw_sys::general::PIPE_BUF as usize;

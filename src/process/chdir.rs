@@ -1,7 +1,8 @@
+use crate::std_ffi::CString;
 use crate::{imp, io, path};
+use alloc::vec::Vec;
 #[cfg(not(target_os = "fuchsia"))]
 use io_lifetimes::AsFd;
-use std::ffi::CString;
 
 /// `chdir(path)`—Change the working directory.
 ///

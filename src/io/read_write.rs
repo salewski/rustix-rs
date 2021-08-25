@@ -2,6 +2,7 @@
 
 use crate::{imp, io};
 use io_lifetimes::AsFd;
+#[cfg(feature = "vectored")]
 use std::io::{IoSlice, IoSliceMut};
 
 /// `RWF_*` constants for use with [`preadv2`] and [`pwritev2`].
@@ -72,6 +73,7 @@ pub fn pwrite<Fd: AsFd>(fd: &Fd, buf: &[u8], offset: u64) -> io::Result<usize> {
 ///
 /// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/readv.html
 /// [Linux]: https://man7.org/linux/man-pages/man2/readv.2.html
+#[cfg(feature = "vectored")]
 #[inline]
 pub fn readv<Fd: AsFd>(fd: &Fd, bufs: &[IoSliceMut]) -> io::Result<usize> {
     let fd = fd.as_fd();
@@ -86,6 +88,7 @@ pub fn readv<Fd: AsFd>(fd: &Fd, bufs: &[IoSliceMut]) -> io::Result<usize> {
 ///
 /// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/writev.html
 /// [Linux]: https://man7.org/linux/man-pages/man2/writev.2.html
+#[cfg(feature = "vectored")]
 #[inline]
 pub fn writev<Fd: AsFd>(fd: &Fd, bufs: &[IoSlice]) -> io::Result<usize> {
     let fd = fd.as_fd();
@@ -99,6 +102,7 @@ pub fn writev<Fd: AsFd>(fd: &Fd, bufs: &[IoSlice]) -> io::Result<usize> {
 ///  - [Linux]
 ///
 /// [Linux]: https://man7.org/linux/man-pages/man2/preadv.2.html
+#[cfg(feature = "vectored")]
 #[cfg(not(target_os = "redox"))]
 #[inline]
 pub fn preadv<Fd: AsFd>(fd: &Fd, bufs: &[IoSliceMut], offset: u64) -> io::Result<usize> {
@@ -113,6 +117,7 @@ pub fn preadv<Fd: AsFd>(fd: &Fd, bufs: &[IoSliceMut], offset: u64) -> io::Result
 ///  - [Linux]
 ///
 /// [Linux]: https://man7.org/linux/man-pages/man2/pwritev.2.html
+#[cfg(feature = "vectored")]
 #[cfg(not(target_os = "redox"))]
 #[inline]
 pub fn pwritev<Fd: AsFd>(fd: &Fd, bufs: &[IoSlice], offset: u64) -> io::Result<usize> {
@@ -128,6 +133,7 @@ pub fn pwritev<Fd: AsFd>(fd: &Fd, bufs: &[IoSlice], offset: u64) -> io::Result<u
 ///  - [Linux]
 ///
 /// [Linux]: https://man7.org/linux/man-pages/man2/preadv2.2.html
+#[cfg(feature = "vectored")]
 #[cfg(any(linux_raw, all(libc, any(target_os = "android", target_os = "linux"))))]
 #[inline]
 pub fn preadv2<Fd: AsFd>(
@@ -148,6 +154,7 @@ pub fn preadv2<Fd: AsFd>(
 ///  - [Linux]
 ///
 /// [Linux]: https://man7.org/linux/man-pages/man2/pwritev2.2.html
+#[cfg(feature = "vectored")]
 #[cfg(any(linux_raw, all(libc, any(target_os = "android", target_os = "linux"))))]
 #[inline]
 pub fn pwritev2<Fd: AsFd>(

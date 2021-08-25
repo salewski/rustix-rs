@@ -60,16 +60,17 @@
 
 #![allow(unsafe_code)]
 
+use crate::c_types::{c_int, c_uint};
 use crate::imp::linux_raw::syscalls::{epoll_add, epoll_create, epoll_del, epoll_mod, epoll_wait};
 use crate::io;
 use crate::io::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd, RawFd};
+use alloc::vec::Vec;
 use bitflags::bitflags;
+use core::fmt;
+use core::marker::PhantomData;
+use core::ops::Deref;
+use core::ptr::null;
 use io_lifetimes::{AsFd, BorrowedFd, FromFd, IntoFd};
-use std::fmt;
-use std::marker::PhantomData;
-use std::ops::Deref;
-use std::os::raw::{c_int, c_uint};
-use std::ptr::null;
 
 bitflags! {
     /// `EPOLL_*` for use with [`Epoll::new`].
@@ -425,7 +426,7 @@ impl<'context, T: AsFd + IntoFd + FromFd> From<OwnedFd> for Epoll<Owning<'contex
 }
 
 pub struct Iter<'context, Context: self::Context> {
-    iter: std::slice::Iter<'context, Event>,
+    iter: core::slice::Iter<'context, Event>,
     context: *const Context,
     _phantom: PhantomData<&'context Context>,
 }
