@@ -57,7 +57,7 @@ use crate::path::DecInt;
 use crate::process::{
     Cpuid, Gid, MembarrierCommand, MembarrierQuery, Pid, Rlimit, Uid, WaitOptions, WaitStatus,
 };
-use crate::time::NanosleepRelativeResult;
+use crate::time::{Itimerspec, NanosleepRelativeResult, TimerfdFlags, TimerfdTimerFlags};
 #[cfg(target_pointer_width = "32")]
 use core::convert::TryInto;
 use core::mem::MaybeUninit;
@@ -94,7 +94,8 @@ use linux_raw_sys::general::{__NR_ppoll, sigset_t};
 use linux_raw_sys::v5_11::general::__NR_mremap;
 use linux_raw_sys::v5_4::general::{
     __NR_clone, __NR_eventfd2, __NR_getrandom, __NR_membarrier, __NR_mlock2, __NR_preadv2,
-    __NR_prlimit64, __NR_pwritev2, __NR_userfaultfd,
+    __NR_prlimit64, __NR_pwritev2, __NR_timerfd_create, __NR_timerfd_gettime, __NR_timerfd_settime,
+    __NR_userfaultfd,
 };
 #[cfg(target_pointer_width = "64")]
 use {super::conv::loff_t_from_u64, linux_raw_sys::general::__NR_mmap};
@@ -1573,6 +1574,46 @@ pub(crate) unsafe fn fork() -> io::Result<Pid> {
         zero(),
     ))?;
     Ok(Pid::from_raw(pid))
+}
+
+pub(crate) fn timerfd_create(clockid: ClockId, flags: TimerfdFlags) -> io::Result<OwnedFd> {
+    unsafe {
+        ret_owned_fd(syscall2(
+            nr(__NR_timerfd_create),
+            clockid_t(clockid),
+            c_uint(flags.bits()),
+        ))
+    }
+}
+
+pub(crate) fn timerfd_settime(
+    fd: BorrowedFd<'_>,
+    flags: TimerfdTimerFlags,
+    new_value: &Itimerspec,
+) -> io::Result<Itimerspec> {
+    let mut result = MaybeUninit::<Itimerspec>::uninit();
+    unsafe {
+        ret(syscall4(
+            nr(__NR_timerfd_settime),
+            borrowed_fd(fd),
+            c_uint(flags.bits()),
+            by_ref(new_value),
+            out(&mut result),
+        ))
+        .map(|()| result.assume_init())
+    }
+}
+
+pub(crate) fn timerfd_gettime(fd: BorrowedFd<'_>) -> io::Result<Itimerspec> {
+    let mut result = MaybeUninit::<Itimerspec>::uninit();
+    unsafe {
+        ret(syscall2(
+            nr(__NR_timerfd_gettime),
+            borrowed_fd(fd),
+            out(&mut result),
+        ))
+        .map(|()| result.assume_init())
+    }
 }
 
 pub(crate) unsafe fn execve(

@@ -1,3 +1,5 @@
 mod types;
 
-pub use types::{ClockId, DynamicClockId, Nsecs, Secs, Timespec};
+pub use types::{
+    ClockId, DynamicClockId, Itimerspec, Nsecs, Secs, TimerfdFlags, TimerfdTimerFlags, Timespec,
+};

@@ -1,4 +1,6 @@
 use super::super::fd::BorrowedFd;
+use bitflags::bitflags;
+use std::os::raw::c_uint;
 
 /// `struct timespec`
 pub type Timespec = linux_raw_sys::general::__kernel_timespec;
@@ -67,4 +69,32 @@ pub enum DynamicClockId<'a> {
 
     /// `CLOCK_BOOTTIME_ALARM`, available on Linux >= 2.6.39
     BoottimeAlarm,
+}
+
+/// `struct itimerspec`
+pub struct Itimerspec {
+    pub it_interval: Timespec,
+    pub it_value: Timespec,
+}
+
+bitflags! {
+    /// `TFD_*` flags for use with [`timerfd_create`].
+    pub struct TimerfdFlags: c_uint {
+        /// `TFD_NONBLOCK`
+        const NONBLOCK = linux_raw_sys::general::TFD_NONBLOCK;
+
+        /// `TFD_CLOEXEC`
+        const CLOEXEC = linux_raw_sys::general::TFD_CLOEXEC;
+    }
+}
+
+bitflags! {
+    /// `TFD_TIMER_*` flags for use with [`timerfd_settime`].
+    pub struct TimerfdTimerFlags: c_uint {
+        /// `TFD_TIMER_ABSTIME`
+        const ABSTIME = linux_raw_sys::v5_4::general::TFD_TIMER_CANCEL_ON_SET;
+
+        /// `TFD_TIMER_CANCEL_ON_SET`
+        const CANCEL_ON_SET = linux_raw_sys::v5_4::general::TFD_TIMER_CANCEL_ON_SET;
+    }
 }

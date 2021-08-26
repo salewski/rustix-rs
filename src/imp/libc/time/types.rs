@@ -110,3 +110,31 @@ pub enum DynamicClockId<'a> {
     #[cfg(any(target_os = "android", target_os = "linux"))]
     BoottimeAlarm,
 }
+
+/// `struct itimerspec`
+#[cfg(any(target_os = "android", target_os = "linux"))]
+pub type Itimerspec = libc::itimerspec;
+
+#[cfg(any(target_os = "android", target_os = "linux"))]
+bitflags! {
+    /// `TFD_*` flags for use with [`timerfd_create`].
+    pub struct TimerfdFlags: c_int {
+        /// `TFD_NONBLOCK`
+        const NONBLOCK = libc::TFD_NONBLOCK;
+
+        /// `TFD_CLOEXEC`
+        const CLOEXEC = libc::TFD_CLOEXEC;
+    }
+}
+
+#[cfg(any(target_os = "android", target_os = "linux"))]
+bitflags! {
+    /// `TFD_TIMER_*` flags for use with [`timerfd_settime`].
+    pub struct TimerfdTimerFlags: c_int {
+        /// `TFD_TIMER_ABSTIME`
+        const ABSTIME = libc::TFD_TIMER_CANCEL_ON_SET;
+
+        /// `TFD_TIMER_CANCEL_ON_SET`
+        const CANCEL_ON_SET = libc::TFD_TIMER_CANCEL_ON_SET;
+    }
+}

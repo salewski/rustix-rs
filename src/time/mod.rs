@@ -4,6 +4,8 @@ use crate::imp;
 
 #[cfg(not(target_os = "redox"))]
 mod clock;
+#[cfg(any(target_os = "android", target_os = "linux"))]
+mod timerfd;
 
 // TODO: Convert WASI'S clock APIs to use handles rather than ambient clock
 // identifiers, update `wasi-libc`, and then add support in `rustix`.
@@ -23,5 +25,9 @@ pub use clock::{nanosleep, NanosleepRelativeResult};
     target_os = "wasi",
 )))]
 pub use clock::{clock_nanosleep_absolute, clock_nanosleep_relative};
+#[cfg(any(target_os = "android", target_os = "linux"))]
+pub use timerfd::{timerfd_create, timerfd_gettime, timerfd_settime};
 
+#[cfg(any(target_os = "android", target_os = "linux"))]
+pub use imp::time::{Itimerspec, TimerfdFlags, TimerfdTimerFlags};
 pub use imp::time::{Nsecs, Secs, Timespec};
